@@ -475,8 +475,6 @@ subdirs := \
 	external/bouncycastle \
 	external/bsdiff \
 	external/bzip2 \
-	external/clang \
-	external/compiler-rt \
 	external/e2fsprogs \
 	external/expat \
 	external/flac \
@@ -491,7 +489,6 @@ subdirs := \
 	external/liblzf \
 	external/libpng \
 	external/libvpx \
-	external/llvm \
 	external/mksh \
 	external/openssl \
 	external/protobuf \
