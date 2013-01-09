@@ -15,6 +15,11 @@ ifeq ($(TARGET_ARCH),arm)
         # this should be copied to HOST_OUT_EXECUTABLES instead
         ABP:=$(ABP):$(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/arm/arm-linux-androideabi-4.6/bin
     endif
+    # Add the Linaro toolchain bin dir if it actually exists
+    ifneq ($(wildcard $(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/arm/linaro-4.7.2/bin),)
+        # this should be copied to HOST_OUT_EXECUTABLES instead
+        ABP:=$(ABP):$(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/arm/linaro-4.7.2/bin
+    endif
 else ifeq ($(TARGET_ARCH),x86)
 
 # Add the x86 toolchain bin dir if it actually exists

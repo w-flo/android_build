@@ -156,6 +156,14 @@ function setpaths()
     if [ -d "$gccprebuiltdir/$toolchaindir" ]; then
         export ANDROID_EABI_TOOLCHAIN=$gccprebuiltdir/$toolchaindir
     fi
+    # Also check for the Linaro GCC 4.7.2 and use it as default if available
+    if [ "$ARCH" == "arm" ];
+    then
+        toolchaindir=arm/linaro-4.7.2/bin
+        if [ -d "$gccprebuiltdir/$toolchaindir" ]; then
+            export ANDROID_EABI_TOOLCHAIN=$gccprebuiltdir/$toolchaindir
+        fi
+    fi
 
     unset ARM_EABI_TOOLCHAIN ARM_EABI_TOOLCHAIN_PATH
     case $ARCH in
@@ -172,6 +180,15 @@ function setpaths()
             # No need to set ARM_EABI_TOOLCHAIN for other ARCHs
             ;;
     esac
+    # Also check for the Linaro GCC 4.7.2 and use it as default if available
+    if [ "$ARCH" == "arm" ];
+    then
+        toolchaindir=arm/linaro-4.7.2/bin
+        if [ -d "$gccprebuiltdir/$toolchaindir" ]; then
+            export ARM_EABI_TOOLCHAIN="$gccprebuiltdir/$toolchaindir"
+            ARM_EABI_TOOLCHAIN_PATH=":$gccprebuiltdir/$toolchaindir"
+        fi
+    fi
 
     export ANDROID_TOOLCHAIN=$ANDROID_EABI_TOOLCHAIN
     export ANDROID_QTOOLS=$T/development/emulator/qtools
