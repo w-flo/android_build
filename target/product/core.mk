@@ -130,6 +130,8 @@ PRODUCT_PACKAGES += \
     zoneinfo.idx \
     zoneinfo.version \
     libinput \
+    libubuntu_application_api \
+    ubuntuappmanager \
     ubuntu_chroot \
     uchroot
 
