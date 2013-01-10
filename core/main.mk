@@ -533,8 +533,7 @@ subdirs := \
 	frameworks/opt/emoji \
 	hardware/broadcom \
 	hardware/broadcom/wlan/bcmdhd \
-	hardware/invensense/libsensors \
-	hardware/invensense/mlsdk \
+	hardware/invensense \
 	hardware/libhardware \
 	hardware/libhardware_legacy \
 	hardware/qcom \
