@@ -541,6 +541,7 @@ subdirs := \
 
 # device and vendor
 subdirs += \
+	device/asus \
 	device/lge \
 	device/samsung \
 	vendor/cm \
