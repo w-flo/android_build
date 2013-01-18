@@ -520,7 +520,6 @@ subdirs := \
 	frameworks/av/services/camera/libcameraservice \
 	frameworks/base/cmds/bootanimation \
 	frameworks/base/cmds/installd \
-	frameworks/base/cmds/sensorservice \
 	frameworks/base/cmds/screencap \
 	frameworks/base/cmds/servicemanager \
 	frameworks/base/libs/androidfw \
@@ -528,6 +527,7 @@ subdirs := \
 	frameworks/base/media/mediaserver \
 	frameworks/base/services/input \
 	frameworks/base/tools/aapt \
+	frameworks/native/cmds/sensorservice \
 	frameworks/native/cmds/surfaceflinger \
 	frameworks/native/libs \
 	frameworks/native/opengl \
