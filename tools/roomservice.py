@@ -40,6 +40,12 @@ from xml.etree import ElementTree
 
 product = sys.argv[1];
 
+phablet = {'branch': 'phablet-10.1',
+           'fallback_branch': 'cm-10.1',
+           'remote': 'phablet',
+           'url_template': 'http://phablet.ubuntu.com/gitweb?p=CyanogenMod/%s.git;a=heads',
+           }
+
 if len(sys.argv) > 2:
     depsonly = sys.argv[2]
 else:
@@ -179,6 +185,8 @@ def add_to_manifest(repositories, fallback_branch = None):
 
         if 'branch' in repository:
             project.set('revision',repository['branch'])
+            if repository['branch'] == phablet['branch']:
+                project.set('remote', phablet['remote'])
         elif fallback_branch:
             print("Using fallback branch %s for %s" % (fallback_branch, repo_name))
             project.set('revision', fallback_branch)
@@ -222,6 +230,29 @@ def fetch_dependencies(repo_path, fallback_branch = None):
         print('Syncing dependencies')
         os.system('repo sync %s' % ' '.join(syncable_repos))
 
+def phablet_has_branch(repository, revision):
+    print("Searching for repository on phablet.ubuntu.com")
+    phablet_url = phablet['url_template'] % repository
+    try:
+        request = urllib2.urlopen(phablet_url).read()
+        heads_html = filter(lambda x: '<a class="list name"' in x,
+                            request.split('\n'))
+        heads = [ re.sub('<[^>]*>', '', i) for i in heads_html ]
+        print("Found heads:")
+        for head in heads:
+            print(head)
+        if revision in heads:
+            return True
+        else:
+            return False
+    except urllib2.HTTPError as e:
+        if e.code == 404:
+            print("Repository not found on phablet.ubuntu.com")
+            print("This may likely be an unsupported build target")
+            return False
+        else:
+            raise e
+
 def has_branch(branches, revision):
     return revision in [branch['name'] for branch in branches]
 
@@ -259,7 +290,11 @@ else:
             adding = {'repository':repo_name,'target_path':repo_path}
             
             fallback_branch = None
-            if not has_branch(result, default_revision):
+            if phablet_has_branch(repository['name'], default_revision):
+                print('Found on phablet')
+                adding['branch'] = default_revision
+            elif not has_branch(result, default_revision):
+                found = False
                 if os.getenv('ROOMSERVICE_BRANCHES'):
                     fallbacks = list(filter(bool, os.getenv('ROOMSERVICE_BRANCHES').split(' ')))
                     for fallback in fallbacks:
@@ -267,6 +302,13 @@ else:
                             print("Using fallback branch: %s" % fallback)
                             fallback_branch = fallback
                             break
+
+                # Adding specifically for phablet
+                if has_branch(result, phablet['fallback_branch']):
+                    print("Using %s as a fallback for %s" % \
+                           (phablet['fallback_branch'], phablet['branch']))
+                    found = True
+                    fallback_branch = phablet['fallback_branch']
 
                 if not fallback_branch:
                     print("Default revision %s not found in %s. Bailing." % (default_revision, repo_name))
