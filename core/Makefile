@@ -379,12 +379,17 @@ INTERNAL_RAMDISK_FILES := $(filter $(TARGET_ROOT_OUT)/%, \
 
 BUILT_RAMDISK_TARGET := $(PRODUCT_OUT)/ramdisk.img
 
+BOOT_RAMDISK_IMG := $(TARGET_OUT)/boot/android-ramdisk.img
+
 # We just build this directly to the install location.
 INSTALLED_RAMDISK_TARGET := $(BUILT_RAMDISK_TARGET)
 $(INSTALLED_RAMDISK_TARGET): $(MKBOOTFS) $(INTERNAL_RAMDISK_FILES) | $(MINIGZIP)
 	$(call pretty,"Target ram disk: $@")
 	$(hide) $(MKBOOTFS) $(TARGET_ROOT_OUT) | $(MINIGZIP) > $@
 
+$(BOOT_RAMDISK_IMG): $(INSTALLED_RAMDISK_TARGET)
+	$(hide) mkdir -p $(dir $@)
+	$(hide) $(ACP) $(INSTALLED_RAMDISK_TARGET) $@
 
 ifneq ($(strip $(TARGET_NO_KERNEL)),true)
 
@@ -809,7 +814,8 @@ INTERNAL_SYSTEMIMAGE_FILES := $(filter $(TARGET_OUT)/%, \
     $(ALL_GENERATED_SOURCES) \
     $(ALL_DEFAULT_INSTALLED_MODULES) \
     $(PDK_FUSION_SYSIMG_FILES) \
-    $(RECOVERY_RESOURCE_ZIP))
+    $(RECOVERY_RESOURCE_ZIP) \
+    $(BOOT_RAMDISK_IMG))
 
 ifdef is_tests_build
 # We don't want to install tests modules to the system partition
