@@ -1831,6 +1831,28 @@ function set_java_home() {
     fi
 }
 
+function get_hybris() {
+    HYBRIS_SRC=ubuntu/hybris
+    HYBRIS_SRC_PACKAGE=libhybris
+    HYBRIS_SRC_SERIES=saucy
+
+    # Can't exit while sourcing.
+    if [ -z $(which pull-lp-source) ]; then
+        echo "*************************************************"
+        echo "Please apt-get install ubuntu-dev-tools and rerun"
+        echo "or build will be incomplete"
+        echo "*************************************************"
+    fi
+
+    if [ -d $HYBRIS_SRC ]; then
+        rm -rf $HYBRIS_SRC
+    fi
+    pull-lp-source $HYBRIS_SRC_PACKAGE $HYBRIS_SRC_SERIES
+    rm ${HYBRIS_SRC_PACKAGE}*.tar.gz ${HYBRIS_SRC_PACKAGE}*.dsc
+    mv ${HYBRIS_SRC_PACKAGE}* $HYBRIS_SRC
+    rm -rf $HYBRIS_SRC/.pc
+}
+
 if [ "x$SHELL" != "x/bin/bash" ]; then
     case `ps -o command -p $$` in
         *bash*)
@@ -1849,5 +1871,7 @@ do
     . $f
 done
 unset f
+
+get_hybris
 
 addcompletions
