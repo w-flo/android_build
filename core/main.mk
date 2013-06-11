@@ -493,6 +493,7 @@ subdirs := \
 	external/mksh \
 	external/openssl \
 	external/protobuf \
+	external/qemu \
 	external/skia \
 	external/sonivox \
 	external/speex \
@@ -535,6 +536,8 @@ subdirs := \
 	frameworks/native/services \
 	frameworks/opt/emoji \
 	hardware \
+	prebuilts/tools/linux-x86/sdl \
+	sdk/emulator \
 	system/core \
 	system/bluetooth \
 	system/extras/ext4_utils \
