@@ -493,7 +493,6 @@ subdirs := \
 	external/mksh \
 	external/openssl \
 	external/protobuf \
-	external/qemu \
 	external/skia \
 	external/sonivox \
 	external/speex \
@@ -549,6 +548,11 @@ subdirs := \
 ifeq ($(TARGET_PRODUCT), cm_manta)
 subdirs += \
 	system/security/keystore
+endif
+
+ifeq ($(TARGET_PRODUCT), cm_goldfish)
+subdirs += \
+	external/qemu
 endif
 
 # device and vendor
