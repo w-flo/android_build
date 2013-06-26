@@ -141,7 +141,9 @@ $(KERNEL_HEADERS_INSTALL):
 .PHONY: $(TARGET_OUT_UBUNTU)
 $(TARGET_OUT_UBUNTU):
 	$(hide) rm -rf $(TARGET_OUT_UBUNTU)
+	$(hide) rm -rf $(KERNEL_MODULES_OUT)
 	$(hide) mkdir -p $(TARGET_OUT_UBUNTU)
+	$(hide) mkdir -p $(KERNEL_MODULES_OUT)
 
 .PHONY: $(TARGET_OUT_UBUNTU)/vmlinuz
 $(TARGET_OUT_UBUNTU)/vmlinuz: $(TARGET_OUT_UBUNTU) $(KERNEL_HEADERS_INSTALL)
@@ -155,12 +157,15 @@ $(TARGET_OUT_UBUNTU)/vmlinuz: $(TARGET_OUT_UBUNTU) $(KERNEL_HEADERS_INSTALL)
 		if [ -n "$$kernel_image" ]; then \
 			$(PULL_LP_BIN) $$kernel_image -o $(TARGET_OUT_UBUNTU) $(TARGET_KERNEL_UBUNTU_SERIES); \
 			dpkg-deb -x $(TARGET_OUT_UBUNTU)/linux-image-[0-9]*.deb $(TARGET_OUT_UBUNTU); \
+			kernel_version=$${kernel_image#linux-image-}; \
+			cp -v $(TARGET_OUT_UBUNTU)/boot/vmlinuz-$$kernel_version $(TARGET_OUT_UBUNTU)/vmlinuz; \
+			cp -a $(TARGET_OUT_UBUNTU)/lib/modules/$$kernel_version $(KERNEL_MODULES_OUT); \
+			depmod -a -b $(TARGET_OUT) $$kernel_version; \
 		else \
 			echo -n "Unable to find a valid linux-image dependency from "; \
 			echo "the meta package $(TARGET_KERNEL_UBUNTU_META), aborting."; \
 			exit 1; \
 		fi;
-	cp $(TARGET_OUT_UBUNTU)/boot/vmlinuz-[0-9]* $(TARGET_OUT_UBUNTU)/vmlinuz
 
 else ifeq ($(FULL_KERNEL_BUILD),true)
 
