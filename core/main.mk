@@ -454,33 +454,139 @@ subdirs += build/tools/acp
 endif
 
 else	# !SDK_ONLY
-ifeq ($(BUILD_TINY_ANDROID), true)
+#ifeq ($(BUILD_TINY_ANDROID), true)
 
 # TINY_ANDROID is a super-minimal build configuration, handy for board
 # bringup and very low level debugging
 
 subdirs := \
+	abi/cpp \
 	bionic \
-	system/core \
-	system/extras/ext4_utils \
-	system/extras/su \
+	bootable/recovery \
 	build/libs \
 	build/target \
 	build/tools/acp \
+	build/tools/check_prereq \
+	build/tools/fs_config \
+	build/tools/zipalign \
+	development/tools/emulator/opengl \
+	external/aac \
+	external/bouncycastle \
+	external/bsdiff \
+	external/busybox \
+	external/bzip2 \
+	external/chromium \
+	external/e2fsprogs \
+	external/expat \
+	external/flac \
+	external/freetype \
 	external/gcc-demangle \
+	external/genext2fs \
+	external/giflib \
+	external/gtest \
+	external/icu4c \
+	external/jhead \
+	external/jpeg \
+	external/liblzf \
+	external/libpng \
+	external/libvpx \
 	external/mksh \
 	external/openssl \
+	external/protobuf \
+	external/skia \
+	external/sonivox \
+	external/speex \
+	external/sqlite \
+	external/stlport \
+	external/tinyalsa \
+	external/tremolo \
+	external/webp \
+	external/webrtc \
+	external/wpa_supplicant_6 \
+	external/wpa_supplicant_8 \
 	external/yaffs2 \
-	external/zlib
-else	# !BUILD_TINY_ANDROID
+	external/zlib \
+	frameworks/av/camera \
+	frameworks/av/drm \
+	frameworks/av/media/common_time \
+	frameworks/av/media/libaah_rtp \
+	frameworks/av/media/libeffects \
+	frameworks/av/media/libmedia \
+	frameworks/av/media/libmedia_native \
+	frameworks/av/media/libmediaplayerservice \
+	frameworks/av/media/libnbaio \
+	frameworks/av/media/libstagefright \
+	frameworks/av/media/mediaserver \
+	frameworks/av/services/audioflinger \
+	frameworks/av/services/camera/libcameraservice \
+	frameworks/base/cmds/bootanimation \
+	frameworks/base/cmds/installd \
+	frameworks/base/cmds/screencap \
+	frameworks/base/cmds/servicemanager \
+	frameworks/base/libs/androidfw \
+	frameworks/base/libs/diskusage \
+	frameworks/base/media/mediaserver \
+	frameworks/base/services/input \
+	frameworks/base/tools/aapt \
+	frameworks/native/cmds/sensorservice \
+	frameworks/native/cmds/surfaceflinger \
+	frameworks/native/libs \
+	frameworks/native/opengl \
+	frameworks/native/services \
+	frameworks/opt/emoji \
+	hardware \
+	prebuilts/tools/linux-x86/sdl \
+	sdk/emulator \
+	system/core \
+	system/bluetooth \
+	system/extras/ext4_utils \
+	system/media/audio_utils \
+	system/media/camera \
+	system/su
+
+# Keystore only on manta
+ifeq ($(TARGET_PRODUCT), cm_manta)
+subdirs += \
+	system/security/keystore
+endif
+
+ifeq ($(TARGET_PRODUCT), cm_goldfish)
+subdirs += \
+	external/qemu
+endif
+
+# device and vendor
+subdirs += \
+	device/asus \
+	device/lge \
+	device/samsung \
+	vendor/asus \
+	vendor/audience \
+	vendor/broadcom \
+	vendor/cm \
+	vendor/elan \
+	vendor/invensense \
+	vendor/lge \
+	vendor/nvidia \
+	vendor/nxp \
+	vendor/qcom \
+	vendor/samsung \
+	vendor/widevine
+
+# Ubuntu et. al.
+subdirs += \
+	ubuntu
+
+#else  # !BUILD_TINY_ANDROID
+
 #
 # Typical build; include any Android.mk files we can find.
 #
-subdirs := $(TOP)
+#subdirs := $(TOP)
 
 FULL_BUILD := true
 
-endif	# !BUILD_TINY_ANDROID
+#endif	# !BUILD_TINY_ANDROID
 
 endif	# !SDK_ONLY
 
