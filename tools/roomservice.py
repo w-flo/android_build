@@ -40,7 +40,7 @@ from xml.etree import ElementTree
 
 product = sys.argv[1];
 
-phablet = {'branch': 'phablet-10.1',
+phablet = {'branch': 'phablet-saucy',
            'fallback_branch': 'cm-10.1',
            'remote': 'phablet',
            'url_template': 'http://phablet.ubuntu.com/gitweb?p=CyanogenMod/%s.git;a=heads',
