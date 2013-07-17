@@ -215,6 +215,12 @@ def fetch_dependencies(repo_path, fallback_branch = None):
 
         for dependency in dependencies:
             if not is_in_manifest("CyanogenMod/%s" % dependency['repository']):
+                if phablet_has_branch(dependency['repository'], phablet['branch']):
+                    print('Found dependency (%s:%s) on phablet.ubuntu.com' %
+                                    (dependency['repository'], phablet['branch']))
+                    dependency['branch'] = phablet['branch']
+                elif not fallback_branch:
+                    fallback_branch = phablet['fallback_branch']
                 fetch_list.append(dependency)
                 syncable_repos.append(dependency['target_path'])
 
@@ -291,7 +297,8 @@ else:
             
             fallback_branch = None
             if phablet_has_branch(repository['name'], default_revision):
-                print('Found on phablet')
+                print('Found repository (%s:%s) on phablet.ubuntu.com' %
+                                    (repository['name'], default_revision))
                 adding['branch'] = default_revision
             elif not has_branch(result, default_revision):
                 found = False
