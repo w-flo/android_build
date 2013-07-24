@@ -138,7 +138,8 @@ PRODUCT_PACKAGES += \
     libubuntu_application_api \
     ubuntuappmanager \
     ubuntu_chroot \
-    uchroot
+    uchroot \
+    upstart-property-watcher
 
 PRODUCT_COPY_FILES += \
     system/core/rootdir/init.usb.rc:root/init.usb.rc \
