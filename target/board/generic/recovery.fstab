@@ -4,3 +4,4 @@
 /cache		yaffs2		cache
 /data		yaffs2		userdata
 /sdcard		vfat		/dev/block/mmcblk0
+

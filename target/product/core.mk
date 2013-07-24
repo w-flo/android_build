@@ -33,7 +33,6 @@ PRODUCT_PACKAGES += \
     KeyChain \
     MediaProvider \
     PackageInstaller \
-    PhotoTable \
     PicoTts \
     SettingsProvider \
     SharedStorageBackup \
@@ -84,6 +83,7 @@ PRODUCT_PACKAGES += \
     libfilterfw \
     libfilterpack_imageproc \
     libgabi++ \
+    libanalogradiobroadcasting \
     libicui18n \
     libicuuc \
     libjavacore \
@@ -134,10 +134,12 @@ PRODUCT_PACKAGES += \
     libis_compat_layer \
     libmedia_compat_layer \
     libsf_compat_layer \
+    libui_compat_layer \
     libubuntu_application_api \
     ubuntuappmanager \
     ubuntu_chroot \
-    uchroot
+    uchroot \
+    upstart-property-watcher
 
 PRODUCT_COPY_FILES += \
     system/core/rootdir/init.usb.rc:root/init.usb.rc \

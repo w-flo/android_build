@@ -22,6 +22,8 @@ TARGET_KERNEL_SOURCE ?= $(TARGET_AUTO_KDIR)
 KERNEL_SRC := $(TARGET_KERNEL_SOURCE)
 # kernel configuration - mandatory
 KERNEL_DEFCONFIG := $(TARGET_KERNEL_CONFIG)
+VARIANT_DEFCONFIG := $(TARGET_KERNEL_VARIANT_CONFIG)
+SELINUX_DEFCONFIG := $(TARGET_KERNEL_SELINUX_CONFIG)
 
 ## Internal variables
 KERNEL_OUT := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ
@@ -30,6 +32,8 @@ KERNEL_CONFIG := $(KERNEL_OUT)/.config
 KERNEL_HEADERS_INSTALL := $(KERNEL_OUT)/usr
 KERNEL_MODULES_INSTALL := system
 KERNEL_MODULES_OUT := $(TARGET_OUT)/lib/modules
+
+TARGET_OUT_UBUNTU_KERNEL := $(TARGET_OUT_UBUNTU)/kernel
 
 ifeq ($(BOARD_USES_UBOOT),true)
 	TARGET_PREBUILT_INT_KERNEL := $(KERNEL_OUT)/arch/$(TARGET_ARCH)/boot/uImage
@@ -56,7 +60,7 @@ ifeq ($(TARGET_KERNEL_UBUNTU),true)
         NEEDS_KERNEL_COPY := true
         FETCH_KERNEL_UBUNTU := true
         FULL_KERNEL_BUILD := false
-        KERNEL_BIN := $(TARGET_OUT_UBUNTU)/vmlinuz
+        KERNEL_BIN := $(TARGET_OUT_UBUNTU_KERNEL)/vmlinuz
     else
         $(warning ***************************************************************)
         $(warning * As the Ubuntu kernel package ABI version in part of the     *)
@@ -85,7 +89,7 @@ else ifeq "$(wildcard $(KERNEL_SRC) )" ""
         $(warning * THIS IS DEPRECATED, AND WILL BE DISCONTINUED                *)
         $(warning * Please configure your device to download the kernel         *)
         $(warning * source repository to $(KERNEL_SRC))
-        $(warning * See http://wiki.cyanogenmod.com/wiki/Integrated_kernel_building)
+        $(warning * See http://wiki.cyanogenmod.org/w/Doc:_integrated_kernel_building)
         $(warning * for more information                                        *)
         $(warning ***************************************************************)
         FULL_KERNEL_BUILD := false
@@ -128,9 +132,6 @@ endif
 
 ifeq ($(FETCH_KERNEL_UBUNTU),true)
 
-## Launchpad helper to download binary packages
-PULL_LP_BIN := build/tools/pull-lp-bin.py
-
 ## Also install the kernel headers if the source is available
 $(KERNEL_HEADERS_INSTALL):
 	if [ -f $(KERNEL_SRC)/Makefile ]; then \
@@ -138,28 +139,28 @@ $(KERNEL_HEADERS_INSTALL):
 		$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE) headers_install; \
 	fi
 
-.PHONY: $(TARGET_OUT_UBUNTU)
-$(TARGET_OUT_UBUNTU):
-	$(hide) rm -rf $(TARGET_OUT_UBUNTU)
+.PHONY: $(TARGET_OUT_UBUNTU_KERNEL)
+$(TARGET_OUT_UBUNTU_KERNEL):
+	$(hide) rm -rf $(TARGET_OUT_UBUNTU_KERNEL)
 	$(hide) rm -rf $(KERNEL_MODULES_OUT)
-	$(hide) mkdir -p $(TARGET_OUT_UBUNTU)
+	$(hide) mkdir -p $(TARGET_OUT_UBUNTU_KERNEL)
 	$(hide) mkdir -p $(KERNEL_MODULES_OUT)
 
-.PHONY: $(TARGET_OUT_UBUNTU)/vmlinuz
-$(TARGET_OUT_UBUNTU)/vmlinuz: $(TARGET_OUT_UBUNTU) $(KERNEL_HEADERS_INSTALL)
-	$(hide) $(PULL_LP_BIN) $(TARGET_KERNEL_UBUNTU_META) -o $(TARGET_OUT_UBUNTU) $(TARGET_KERNEL_UBUNTU_SERIES)
+.PHONY: $(TARGET_OUT_UBUNTU_KERNEL)/vmlinuz
+$(TARGET_OUT_UBUNTU_KERNEL)/vmlinuz: $(TARGET_OUT_UBUNTU_KERNEL) $(KERNEL_HEADERS_INSTALL)
+	$(hide) $(PULL_LP_BIN) $(TARGET_KERNEL_UBUNTU_META) -o $(TARGET_OUT_UBUNTU_KERNEL) $(TARGET_KERNEL_UBUNTU_SERIES)
 	$(hide) IFS=", "; for dep in \
-		`dpkg-deb -f $(TARGET_OUT_UBUNTU)/$(TARGET_KERNEL_UBUNTU_META)_*.deb Depends`; do \
+		`dpkg-deb -f $(TARGET_OUT_UBUNTU_KERNEL)/$(TARGET_KERNEL_UBUNTU_META)_*.deb Depends`; do \
 			if echo $$dep | grep -q "linux-image-"; then \
 				kernel_image=$$dep; \
 			fi; \
 		done; \
 		if [ -n "$$kernel_image" ]; then \
-			$(PULL_LP_BIN) $$kernel_image -o $(TARGET_OUT_UBUNTU) $(TARGET_KERNEL_UBUNTU_SERIES); \
-			dpkg-deb -x $(TARGET_OUT_UBUNTU)/linux-image-[0-9]*.deb $(TARGET_OUT_UBUNTU); \
+			$(PULL_LP_BIN) $$kernel_image -o $(TARGET_OUT_UBUNTU_KERNEL) $(TARGET_KERNEL_UBUNTU_SERIES); \
+			dpkg-deb -x $(TARGET_OUT_UBUNTU_KERNEL)/linux-image-[0-9]*.deb $(TARGET_OUT_UBUNTU_KERNEL); \
 			kernel_version=$${kernel_image#linux-image-}; \
-			cp -v $(TARGET_OUT_UBUNTU)/boot/vmlinuz-$$kernel_version $(TARGET_OUT_UBUNTU)/vmlinuz; \
-			cp -a $(TARGET_OUT_UBUNTU)/lib/modules/$$kernel_version $(KERNEL_MODULES_OUT); \
+			cp -v $(TARGET_OUT_UBUNTU_KERNEL)/boot/vmlinuz-$$kernel_version $(TARGET_OUT_UBUNTU_KERNEL)/vmlinuz; \
+			cp -a $(TARGET_OUT_UBUNTU_KERNEL)/lib/modules/$$kernel_version $(KERNEL_MODULES_OUT); \
 			depmod -a -b $(TARGET_OUT) $$kernel_version; \
 		else \
 			echo -n "Unable to find a valid linux-image dependency from "; \
@@ -174,7 +175,8 @@ define mv-modules
     if [ "$$mdpath" != "" ];then\
         mpath=`dirname $$mdpath`;\
         ko=`find $$mpath/kernel -type f -name *.ko`;\
-        for i in $$ko; do mv $$i $(KERNEL_MODULES_OUT)/; done;\
+        for i in $$ko; do $(ARM_EABI_TOOLCHAIN)/arm-eabi-strip --strip-unneeded $$i;\
+        mv $$i $(KERNEL_MODULES_OUT)/; done;\
     fi
 endef
 
@@ -209,6 +211,10 @@ ifeq ($(TARGET_ARCH),arm)
     ccache = 
 endif
 
+ifeq ($(HOST_OS),darwin)
+  MAKE_FLAGS := C_INCLUDE_PATH=$(ANDROID_BUILD_TOP)/external/elfutils/libelf
+endif
+
 ifeq ($(TARGET_KERNEL_MODULES),)
     TARGET_KERNEL_MODULES := no-external-modules
 endif
@@ -218,15 +224,15 @@ $(KERNEL_OUT):
 	mkdir -p $(KERNEL_MODULES_OUT)
 
 $(KERNEL_CONFIG): $(KERNEL_OUT)
-	$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE) $(KERNEL_DEFCONFIG)
+	$(MAKE) $(MAKE_FLAGS) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE) VARIANT_DEFCONFIG=$(VARIANT_DEFCONFIG) SELINUX_DEFCONFIG=$(SELINUX_DEFCONFIG) $(KERNEL_DEFCONFIG)
 
 $(KERNEL_OUT)/piggy : $(TARGET_PREBUILT_INT_KERNEL)
 	$(hide) gunzip -c $(KERNEL_OUT)/arch/$(TARGET_ARCH)/boot/compressed/piggy.gzip > $(KERNEL_OUT)/piggy
 
 TARGET_KERNEL_BINARIES: $(KERNEL_OUT) $(KERNEL_CONFIG) $(KERNEL_HEADERS_INSTALL)
-	$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE) $(TARGET_PREBUILT_INT_KERNEL_TYPE)
-	-$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE) modules
-	-$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) INSTALL_MOD_PATH=../../$(KERNEL_MODULES_INSTALL) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE) modules_install
+	$(MAKE) $(MAKE_FLAGS) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE) $(TARGET_PREBUILT_INT_KERNEL_TYPE)
+	-$(MAKE) $(MAKE_FLAGS) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE) modules
+	-$(MAKE) $(MAKE_FLAGS) -C $(KERNEL_SRC) O=$(KERNEL_OUT) INSTALL_MOD_PATH=../../$(KERNEL_MODULES_INSTALL) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE) modules_install
 	$(mv-modules)
 	$(clean-module-folder)
 
@@ -237,7 +243,7 @@ $(TARGET_PREBUILT_INT_KERNEL): $(TARGET_KERNEL_MODULES)
 	$(clean-module-folder)
 
 $(KERNEL_HEADERS_INSTALL): $(KERNEL_OUT) $(KERNEL_CONFIG)
-	$(MAKE) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE) headers_install
+	$(MAKE) $(MAKE_FLAGS) -C $(KERNEL_SRC) O=$(KERNEL_OUT) ARCH=$(TARGET_ARCH) $(ARM_CROSS_COMPILE) headers_install
 
 endif # FULL_KERNEL_BUILD
 
