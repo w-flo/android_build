@@ -405,7 +405,7 @@ TARGET_UBUNTU_INITRD := $(TARGET_OUT_UBUNTU_INITRD)/usr/lib/ubuntu-touch-generic
 INSTALLED_RAMDISK_TARGET := $(BUILT_RAMDISK_TARGET)
 
 .PHONY: $(INSTALLED_RAMDISK_TARGET)
-$(INSTALLED_RAMDISK_TARGET): $(MKBOOTFS) | $(MINIGZIP)
+$(INSTALLED_RAMDISK_TARGET): $(MKBOOTFS) $(INSTALLED_RAMDISK_TARGET_ANDROID) | $(MINIGZIP)
 	$(call pretty,"Target Ubuntu Touch ram disk: $@")
 	$(hide) rm -rf $(TARGET_OUT_UBUNTU_INITRD) $(TARGET_UBUNTU_ROOT_OUT)
 	$(hide) mkdir -p $(TARGET_OUT_UBUNTU_INITRD) $(TARGET_UBUNTU_ROOT_OUT)
@@ -413,6 +413,10 @@ $(INSTALLED_RAMDISK_TARGET): $(MKBOOTFS) | $(MINIGZIP)
 	$(hide) dpkg-deb -x $(TARGET_OUT_UBUNTU_INITRD)/$(TARGET_UBUNTU_INITRD_PKG)*.deb $(TARGET_OUT_UBUNTU_INITRD)
 	$(hide) $(ACP) $(TARGET_UBUNTU_INITRD) $@
 	$(hide) cd $(TARGET_UBUNTU_ROOT_OUT) && $(MINIGZIP) -c -d $@ | cpio -id
+# boot partition for vision is too small, so get rid of adbd and its crypto dependency
+	$(hide) cd $(TARGET_UBUNTU_ROOT_OUT) && rm lib/arm-linux-gnueabihf/libcrypto.so.1.0.0 && rm sbin/adbd
+	$(hide) cd $(TARGET_UBUNTU_ROOT_OUT) && sed -i '/if . .z ..path. .. then/ i\\n\tpath="/dev/mmcblk0p26" # HACK specific to vision until bug 1199084 is fixed' scripts/touch
+	cd $(TARGET_UBUNTU_ROOT_OUT) && find . | cpio -o -H newc | gzip > $@
 
 ifneq ($(strip $(TARGET_NO_KERNEL)),true)
 
