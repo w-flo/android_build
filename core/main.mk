@@ -471,7 +471,6 @@ subdirs := \
 	build/tools/zipalign \
 	development/tools/emulator/opengl \
 	external/aac \
-	external/bsdiff \
 	external/busybox \
 	external/bzip2 \
 	external/e2fsprogs \
