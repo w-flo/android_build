@@ -415,7 +415,6 @@ $(INSTALLED_RAMDISK_TARGET): $(MKBOOTFS) $(INSTALLED_RAMDISK_TARGET_ANDROID) | $
 	$(hide) cd $(TARGET_UBUNTU_ROOT_OUT) && $(MINIGZIP) -c -d $@ | cpio -id
 # boot partition for vision is too small, so get rid of adbd and its crypto dependency
 	$(hide) cd $(TARGET_UBUNTU_ROOT_OUT) && rm lib/arm-linux-gnueabihf/libcrypto.so.1.0.0 && rm sbin/adbd
-	$(hide) cd $(TARGET_UBUNTU_ROOT_OUT) && sed -i '/if . .z ..path. .. then/ i\\n\tpath="/dev/mmcblk0p26" # HACK specific to vision until bug 1199084 is fixed' scripts/touch
 	cd $(TARGET_UBUNTU_ROOT_OUT) && find . | cpio -o -H newc | gzip > $@
 
 ifneq ($(strip $(TARGET_NO_KERNEL)),true)
