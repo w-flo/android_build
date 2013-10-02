@@ -1,8 +1,5 @@
 #!/bin/sh
 set -e
-
-[ -n "$1" ] && cd "$1"
-
 if [ ! -e ubuntu-rootfs.tar.gz ]; then
     wget -O ubuntu-rootfs.tar.gz http://cdimage.ubuntu.com/ubuntu-touch/daily-preinstalled/current/saucy-preinstalled-touch-armhf.tar.gz
 fi
