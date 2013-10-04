@@ -1928,7 +1928,8 @@ do
 done
 unset f
 
-get_hybris
+## We're now getting the hybris package which in mirrored in phablet.u.c
+# get_hybris
 
 addcompletions
 
