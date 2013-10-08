@@ -549,7 +549,8 @@ endif
 
 ifeq ($(TARGET_PRODUCT), cm_goldfish)
 subdirs += \
-	external/qemu
+	external/qemu \
+	development/tools/emulator/system
 endif
 
 # device and vendor
