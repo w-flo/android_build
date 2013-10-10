@@ -52,7 +52,8 @@ PRODUCT_PACKAGES += \
     libGLESv1_enc \
     qemu-props \
     qemud \
-    camera.goldfish \
     lights.goldfish \
     gps.goldfish \
     sensors.goldfish
+    # FTBFS
+    #camera.goldfish \
