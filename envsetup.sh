@@ -1890,7 +1890,7 @@ function set_java_home() {
 function get_hybris() {
     HYBRIS_SRC=ubuntu/hybris
     HYBRIS_SRC_PACKAGE=libhybris
-    HYBRIS_SRC_SERIES=saucy
+    HYBRIS_SRC_SERIES=trusty
 
     # Can't exit while sourcing.
     if [ -z $(which pull-lp-source) ]; then
