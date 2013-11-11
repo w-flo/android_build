@@ -21,6 +21,7 @@
 # Author: Dmitrijs Ledkovs <dmitrijs.ledkovs@canonical.com>
 
 import json
+import sys
 import urllib.request
 
 host_uri = "https://system-image.ubuntu.com"
@@ -33,6 +34,9 @@ index_raw = response.read()
 index = json.loads(index_raw.decode())
 
 #Get first file (ubuntu-rootfs.tar.xz) from the last full (non-delta) version
-tarball = [version['files'][0]['path'] for version in index['images'] if version['type'] == 'full'][-1]
+latest_version = [version for version in index['images'] if version['type'] == 'full'][-1]
+tarball = latest_version['files'][0]['path']
+version = latest_version['version']
 
+print("INFO: Using system-image tarball version %s" % version, file=sys.stderr)
 print(host_uri + tarball)
