@@ -43,6 +43,18 @@ sudo rmdir $OUT/mnt/system-unpack
 # Customizations for the Ubuntu image
 sudo sh -c "echo manual > $OUT/mnt/etc/init/bluetooth.override"
 
+# Default console for qemu
+sudo sh -c "cat << EOF > $OUT/mnt/etc/init/ttyS2.conf
+# ttyS2 - getty
+
+start on stopped rc RUNLEVEL=[2345] and not-container
+stop on runlevel [!2345]
+
+respawn
+exec /sbin/getty -8 38400 ttyS2
+EOF
+"
+
 # Copy the original Android image
 sudo cp $OUT/system.img $OUT/mnt/var/lib/lxc/android/system.img
 
