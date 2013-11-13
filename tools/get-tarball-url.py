@@ -25,7 +25,7 @@ import sys
 import urllib.request
 
 host_uri = "https://system-image.ubuntu.com"
-json_index_uri = "/devel/mako/index.json"
+json_index_uri = "/devel-proposed/mako/index.json"
 
 response = urllib.request.urlopen(host_uri + json_index_uri)
 
