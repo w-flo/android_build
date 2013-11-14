@@ -40,8 +40,14 @@ sudo mv $OUT/mnt/system $OUT/mnt/system-unpack
 sudo mv $OUT/mnt/system-unpack/* $OUT/mnt/
 sudo rmdir $OUT/mnt/system-unpack
 
-# Customizations for the Ubuntu image
+## Customizations for the Ubuntu image
 sudo sh -c "echo manual > $OUT/mnt/etc/init/bluetooth.override"
+# Can't run powerd by default, as suspend & resume breaks the file system
+sudo sh -c "echo manual > $OUT/mnt/etc/init/powerd.override"
+# SSH can be enabled by default in the emulator
+sudo rm $OUT/mnt/etc/init/ssh.override
+# XXX: Temporarily disable Unity8 until we're able to make it not to crash
+sudo sh -c "echo manual > $OUT/mnt/usr/share/upstart/sessions/unity8.override"
 
 # Default console for qemu
 sudo sh -c "cat << EOF > $OUT/mnt/etc/init/ttyS2.conf
