@@ -46,8 +46,29 @@ sudo sh -c "echo manual > $OUT/mnt/etc/init/bluetooth.override"
 sudo sh -c "echo manual > $OUT/mnt/etc/init/powerd.override"
 # SSH can be enabled by default in the emulator
 sudo rm $OUT/mnt/etc/init/ssh.override
-# XXX: Temporarily disable Unity8 until we're able to make it not to crash
-sudo sh -c "echo manual > $OUT/mnt/usr/share/upstart/sessions/unity8.override"
+# XXX: Disable NM as it seems to also generate hangs (alone and with ofono)
+sudo sh -c "echo manual > $OUT/mnt/etc/init/network-manager.override"
+# Setting up the static network config required by QEMU:
+# - Using static values as dhclient seems to cause hangs
+sudo sh -c "cat << EOF > $OUT/mnt/etc/network/interfaces
+# interfaces(5) file used by ifup(8) and ifdown(8)
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet static
+    address 10.0.2.15
+    netmask 255.255.255.0
+    gateway 10.0.2.2
+    dns-nameservers 10.0.2.3
+EOF
+"
+# XXX: Disabling core services until the emulator is stable enough
+sudo sh -c "echo manual > $OUT/mnt/etc/init/ofono.override"
+sudo sh -c "echo manual > $OUT/mnt/etc/init/ubuntu-location-service.override"
+sudo sh -c "echo manual > $OUT/mnt/etc/init/whoopsie.override"
+sudo sh -c "echo manual > $OUT/mnt/usr/share/upstart/sessions/ofono-setup.override"
+sudo sh -c "echo manual > $OUT/mnt/usr/share/upstart/sessions/mediascanner.override"
 
 # Default console for qemu
 sudo sh -c "cat << EOF > $OUT/mnt/etc/init/ttyS2.conf
