@@ -63,6 +63,11 @@ iface eth0 inet static
     dns-nameservers 10.0.2.3
 EOF
 "
+# We don't need voice recognition enabled at hud by default (20s to load)
+sudo sh -c "cat << EOF > $OUT/mnt/etc/profile.d/hud-service.sh
+export HUD_DISABLE_VOICE=1
+EOF
+"
 # XXX: Disabling core services until the emulator is stable enough
 sudo sh -c "echo manual > $OUT/mnt/etc/init/ofono.override"
 sudo sh -c "echo manual > $OUT/mnt/etc/init/ubuntu-location-service.override"
