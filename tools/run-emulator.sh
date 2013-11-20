@@ -24,7 +24,7 @@ then
     exit 1
 fi
 
-emulator -memory 512 -skin WVGA800 -sysdir out/target/product/generic/ -system out/target/product/generic/system.img \
-    -data out/target/product/generic/userdata.img -cache out/target/product/generic/cache.img \
+emulator -memory 512 -skin WVGA800 -skindir development/tools/emulator/skins -sysdir out/target/product/generic \
+    -system out/target/product/generic/system.img -data out/target/product/generic/userdata.img -cache out/target/product/generic/cache.img \
     -sdcard out/target/product/generic/sdcard.img -kernel out/target/product/generic/ubuntu/kernel/vmlinuz -force-32bit \
     -shell -no-jni -show-kernel -verbose -no-snapstorage -gpu on -qemu -cpu cortex-a9 -append 'apparmor=0'
