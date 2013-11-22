@@ -25,10 +25,10 @@ fi
 
 sudo umount $OUT/mnt || true
 
-dd if=/dev/zero of=$OUT/ubuntu-system.img bs=1 count=1 seek=3G
+dd if=/dev/zero of=$OUT/ubuntu-system.img bs=1 count=0 seek=3G
 mkfs.ext4 -F -L UBUNTU $OUT/ubuntu-system.img
 
-dd if=/dev/zero of=$OUT/sdcard.img bs=1 count=1 seek=4G
+dd if=/dev/zero of=$OUT/sdcard.img bs=1 count=0 seek=4G
 mkfs.ext4 -F -L USERDATA $OUT/sdcard.img
 
 mkdir -p $OUT/mnt
