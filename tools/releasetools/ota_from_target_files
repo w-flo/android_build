@@ -59,6 +59,9 @@ Usage:  ota_from_target_files [flags] input_target_files output_ota_package
   --override_device <device>
       Override device-specific asserts. Can be a comma-separated list.
 
+  --skip_bootimg <boolean>
+      Skip boot.img when updating/flashing the OTA image
+
 """
 
 import sys
@@ -97,6 +100,7 @@ OPTIONS.aslr_mode = True
 OPTIONS.worker_threads = 3
 OPTIONS.backuptool = False
 OPTIONS.override_device = 'auto'
+OPTIONS.skip_bootimg = False
 
 def MostPopularKey(d, default):
   """Given a dict, return the key corresponding to the largest
@@ -435,7 +439,6 @@ def WriteFullOTAPackage(input_zip, output_zip):
   Item.GetMetadata(input_zip)
   Item.Get("system").SetPermissions(script)
 
-  common.CheckSize(boot_img.data, "boot.img", OPTIONS.info_dict)
   common.ZipWriteStr(output_zip, "boot.img", boot_img.data)
   script.ShowProgress(0.2, 0)
 
@@ -444,7 +447,10 @@ def WriteFullOTAPackage(input_zip, output_zip):
     script.RunBackup("restore")
 
   script.ShowProgress(0.2, 10)
-  script.WriteRawImage("/boot", "boot.img")
+
+  if not OPTIONS.skip_bootimg:
+    common.CheckSize(boot_img.data, "boot.img", OPTIONS.info_dict)
+    script.WriteRawImage("/boot", "boot.img")
 
   script.ShowProgress(0.1, 0)
   device_specific.FullOTA_InstallEnd()
@@ -785,6 +791,8 @@ def main(argv):
       OPTIONS.backuptool = bool(a.lower() == 'true')
     elif o in ("--override_device"):
       OPTIONS.override_device = a
+    elif o in ("--skip_bootimg"):
+      OPTIONS.skip_bootimg = bool(a.lower() == 'true')
     else:
       return False
     return True
@@ -800,7 +808,8 @@ def main(argv):
                                               "worker_threads=",
                                               "aslr_mode=",
                                               "backup=",
-                                              "override_device="],
+                                              "override_device=",
+                                              "skip_bootimg="],
                              extra_option_handler=option_handler)
 
   if len(args) != 2:
