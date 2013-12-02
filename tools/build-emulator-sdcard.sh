@@ -18,6 +18,9 @@
 
 set -e
 set -x
+
+export PATH="out/host/linux-x86/bin/:$PATH"
+
 OUT=out/target/product/generic/
 if [ ! -e $OUT/ubuntu-rootfs.tar.xz ]; then
     wget -O $OUT/ubuntu-rootfs.tar.xz `./build/tools/get-tarball-url.py`
@@ -88,7 +91,8 @@ EOF
 "
 
 # Copy the original Android image
-sudo cp $OUT/system.img $OUT/mnt/var/lib/lxc/android/system.img
+simg2img $OUT/system.img $OUT/system.raw
+sudo cp $OUT/system.raw $OUT/mnt/var/lib/lxc/android/system.img
 
 sync
 sudo umount $OUT/mnt
