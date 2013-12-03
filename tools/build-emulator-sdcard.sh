@@ -18,6 +18,9 @@
 
 set -e
 set -x
+
+export PATH="out/host/linux-x86/bin/:$PATH"
+
 OUT=out/target/product/generic/
 if [ ! -e $OUT/ubuntu-rootfs.tar.xz ]; then
     wget -O $OUT/ubuntu-rootfs.tar.xz `./build/tools/get-tarball-url.py`
@@ -25,10 +28,10 @@ fi
 
 sudo umount $OUT/mnt || true
 
-dd if=/dev/zero of=$OUT/ubuntu-system.img bs=1 count=1 seek=3G
+dd if=/dev/zero of=$OUT/ubuntu-system.img bs=1 count=0 seek=3G
 mkfs.ext4 -F -L UBUNTU $OUT/ubuntu-system.img
 
-dd if=/dev/zero of=$OUT/sdcard.img bs=1 count=1 seek=4G
+dd if=/dev/zero of=$OUT/sdcard.img bs=1 count=0 seek=4G
 mkfs.ext4 -F -L USERDATA $OUT/sdcard.img
 
 mkdir -p $OUT/mnt
@@ -40,8 +43,40 @@ sudo mv $OUT/mnt/system $OUT/mnt/system-unpack
 sudo mv $OUT/mnt/system-unpack/* $OUT/mnt/
 sudo rmdir $OUT/mnt/system-unpack
 
-# Customizations for the Ubuntu image
+## Customizations for the Ubuntu image
 sudo sh -c "echo manual > $OUT/mnt/etc/init/bluetooth.override"
+# Can't run powerd by default, as suspend & resume breaks the file system
+sudo sh -c "echo manual > $OUT/mnt/etc/init/powerd.override"
+# SSH can be enabled by default in the emulator
+sudo rm $OUT/mnt/etc/init/ssh.override
+# XXX: Disable NM as it seems to also generate hangs (alone and with ofono)
+sudo sh -c "echo manual > $OUT/mnt/etc/init/network-manager.override"
+# Setting up the static network config required by QEMU:
+# - Using static values as dhclient seems to cause hangs
+sudo sh -c "cat << EOF > $OUT/mnt/etc/network/interfaces
+# interfaces(5) file used by ifup(8) and ifdown(8)
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet static
+    address 10.0.2.15
+    netmask 255.255.255.0
+    gateway 10.0.2.2
+    dns-nameservers 10.0.2.3
+EOF
+"
+# We don't need voice recognition enabled at hud by default (20s to load)
+sudo sh -c "cat << EOF > $OUT/mnt/etc/profile.d/hud-service.sh
+export HUD_DISABLE_VOICE=1
+EOF
+"
+# XXX: Disabling core services until the emulator is stable enough
+sudo sh -c "echo manual > $OUT/mnt/etc/init/ofono.override"
+sudo sh -c "echo manual > $OUT/mnt/etc/init/ubuntu-location-service.override"
+sudo sh -c "echo manual > $OUT/mnt/etc/init/whoopsie.override"
+sudo sh -c "echo manual > $OUT/mnt/usr/share/upstart/sessions/ofono-setup.override"
+sudo sh -c "echo manual > $OUT/mnt/usr/share/upstart/sessions/mediascanner.override"
 
 # Default console for qemu
 sudo sh -c "cat << EOF > $OUT/mnt/etc/init/ttyS2.conf
@@ -56,7 +91,8 @@ EOF
 "
 
 # Copy the original Android image
-sudo cp $OUT/system.img $OUT/mnt/var/lib/lxc/android/system.img
+simg2img $OUT/system.img $OUT/system.raw
+sudo cp $OUT/system.raw $OUT/mnt/var/lib/lxc/android/system.img
 
 sync
 sudo umount $OUT/mnt
