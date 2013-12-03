@@ -555,11 +555,22 @@ endif
 
 # device and vendor
 subdirs += \
-       device/htc \
-       device/generic \
-       device/common \
-       vendor/htc \
-       vendor/cm
+	device/asus \
+	device/htc \
+	device/lge \
+	device/samsung \
+	vendor/asus \
+	vendor/audience \
+	vendor/broadcom \
+	vendor/cm \
+	vendor/elan \
+	vendor/invensense \
+	vendor/lge \
+	vendor/nvidia \
+	vendor/nxp \
+	vendor/qcom \
+	vendor/samsung \
+	vendor/widevine
 
 # Ubuntu et. al.
 subdirs += \
